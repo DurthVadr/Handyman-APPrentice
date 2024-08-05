@@ -59,6 +59,7 @@ EXAMPLES = [
   "How to tie a shoe",
   "Make a brownie recipe",
   "Write an email asking for a sick day off",
+  "How to change a flat tire",
 ]
 
 
