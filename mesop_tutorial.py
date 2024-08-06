@@ -3,6 +3,8 @@ import time
 import mesop as me
 
 
+prompt = "You are a mechanic"
+
 @me.stateclass
 class State:
   input: str
@@ -10,7 +12,7 @@ class State:
   in_progress: bool
 
 
-@me.page(path="/starter_kit")
+@me.page(path="/")
 def page():
   with me.box(
     style=me.Style(
@@ -45,7 +47,7 @@ def header_text():
     )
   ):
     me.text(
-      "Mesop Starter Kit",
+      "Handyman Apprentice",
       style=me.Style(
         font_size=36,
         font_weight=700,
@@ -200,5 +202,5 @@ def footer():
     )
   ):
     me.html(
-      "Made with <a href='https://google.github.io/mesop/'>Mesop</a>",
+      "Made with <a href='https://google.github.io/mesop/'>Mesop</a> by met0",
     )
