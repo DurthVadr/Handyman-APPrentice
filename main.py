@@ -1,8 +1,10 @@
 import mesop as me
 from data_model import State, Models, ModelDialogState, Conversation, ChatMessage
 from dialog import dialog, dialog_actions
-import claude
+
 import gemini
+
+
 
 def change_model_option(e: me.CheckboxChangeEvent):
     s = me.state(ModelDialogState)
@@ -14,8 +16,7 @@ def change_model_option(e: me.CheckboxChangeEvent):
 def set_gemini_api_key(e: me.InputBlurEvent):
     me.state(State).gemini_api_key = e.value
 
-def set_claude_api_key(e: me.InputBlurEvent):
-    me.state(State).claude_api_key = e.value
+
 
 def model_picker_dialog():
     state = me.state(State)
@@ -27,17 +28,12 @@ def model_picker_dialog():
                 value=state.gemini_api_key,
                 on_blur=set_gemini_api_key,
             )
-            me.input(
-                label="Claude API Key",
-                value=state.claude_api_key,
-                on_blur=set_claude_api_key,
-            )
+            
         me.text("Pick a model")
         for model in Models:
             if model.name.startswith("GEMINI"):
                 disabled = not state.gemini_api_key
-            elif model.name.startswith("CLAUDE"):
-                disabled = not state.claude_api_key
+            
             else:
                 disabled = False
             me.checkbox(
@@ -68,7 +64,7 @@ def confirm_model_picker_dialog(e: me.ClickEvent):
     state.models = dialog_state.selected_models
 
 ROOT_BOX_STYLE = me.Style(
-    background="#e7f2ff",
+    background="#F7DCB9",
     height="100%",
     font_family="Inter",
     display="flex",
@@ -99,17 +95,22 @@ def home_page():
             )
         ):
             me.text(
-                "Chat with multiple models at once",
-                style=me.Style(font_size=20, margin=me.Margin(bottom=24)),
+                "Hello! I'm the Handyman Apprentice. I can help you with home repair and improvement tasks. Select a model below to get started.",
+                style=me.Style(font_size=14, 
+                               margin=me.Margin(bottom=24),
+                              ),
             )
             # Uncomment this in the next step:
             examples_row()
             chat_input()
+            footer()
 
 EXAMPLES = [
-    "Create a file-lock in Python",
-    "Write an email to Congress to have free milk for all",
-    "Make a nice box shadow in CSS",
+    
+  "How can I fix my leaking faucet?",
+  "My refrigerator is not cooling, what should I do?",
+  "How to install a new light fixture?",
+  "My window is stuck, how can I fix it?",
 ]
 
 def examples_row():
@@ -127,7 +128,7 @@ def example(text: str):
         on_click=click_example,
         style=me.Style(
             cursor="pointer",
-            background="#b9e1ff",
+            background="#B5C18E",
             width="215px",
             height=160,
             font_weight=500,
@@ -205,7 +206,7 @@ def conversation_page():
 def user_message(content: str):
     with me.box(
         style=me.Style(
-            background="#e7f2ff",
+            background="#914F1E",
             padding=me.Padding.all(16),
             margin=me.Margin.symmetric(vertical=16),
             border_radius=16,
@@ -216,7 +217,7 @@ def user_message(content: str):
 def model_message(message: ChatMessage):
     with me.box(
         style=me.Style(
-            background="#fff",
+            background="#DEAC80",
             padding=me.Padding.all(16),
             border_radius=16,
             margin=me.Margin.symmetric(vertical=16),
@@ -241,14 +242,15 @@ def header():
         ),
     ):
         me.text(
-            "DuoChat",
-            style=me.Style(
-                font_weight=500,
-                font_size=24,
-                color="#3D3929",
-                letter_spacing="0.3px",
-            ),
-        )
+        "Handyman Apprentice",
+        style=me.Style(
+        font_size=36,
+        font_weight=700,
+        background="linear-gradient(90deg, #4285F4, #AA5CDB, #DB4437) text",
+        color="transparent",
+      ),
+    )
+
 
 
 def switch_model(e: me.ClickEvent):
@@ -263,7 +265,7 @@ def chat_input():
         style=me.Style(
             border_radius=16,
             padding=me.Padding.all(8),
-            background="white",
+            background="#914F1E",
             display="flex",
             width="100%",
         )
@@ -271,11 +273,12 @@ def chat_input():
         with me.box(style=me.Style(flex_grow=1)):
             me.native_textarea(
                 value=state.input,
-                placeholder="Enter a prompt",
+                placeholder="Start Fixing!",
                 on_blur=on_blur,
                 style=me.Style(
                     padding=me.Padding(top=16, left=16),
-                    outline="none",
+                    background="#914F1E",
+                    outline="lightblue",
                     width="100%",
                     border=me.Border.all(me.BorderSide(style="none")),
                 ),
@@ -314,11 +317,14 @@ def send_prompt(e: me.ClickEvent):
     input = state.input
     state.input = ""
 
+    
     for conversation in state.conversations:
         model = conversation.model
         messages = conversation.messages
         history = messages[:]
+    
         messages.append(ChatMessage(role="user", content=input))
+        
         messages.append(ChatMessage(role="model", in_progress=True))
         yield
         me.scroll_into_view(key="end_of_messages")
@@ -326,12 +332,49 @@ def send_prompt(e: me.ClickEvent):
             llm_response = gemini.send_prompt_flash(input, history)
         elif model == Models.GEMINI_1_5_PRO.value:
             llm_response = gemini.send_prompt_pro(input, history)
-        elif model == Models.CLAUDE_3_5_SONNET.value:
-            llm_response = claude.call_claude_sonnet(input, history)
         else:
-            raise Exception("Unhandled model", model)
+            me.navigate("/bad_request")
+            
         for chunk in llm_response:
             messages[-1].content += chunk
             yield
         messages[-1].in_progress = False
         yield
+        
+        
+def footer():
+    
+  with me.box(
+    style=me.Style(
+      position="fixed",
+      bottom=0,
+      padding=me.Padding.symmetric(vertical=16, horizontal=16),
+      width="100%",
+      background="#B5C18E",
+      font_size=14,
+    )
+  ):
+    me.html(
+      "Made with <a href='https://google.github.io/mesop/'>Mesop</a> by met0 :)",
+    )
+    
+    
+@me.page(
+    path="/bad_request",
+    stylesheets=STYLESHEETS,
+    security_policy=SECURITY_POLICY,
+)
+def bad_request_page():
+    with me.box(style=ROOT_BOX_STYLE):
+        header()
+        with me.box(
+            style=me.Style(
+                width="min(680px, 100%)",
+                margin=me.Margin.symmetric(horizontal="auto", vertical=36),
+            )
+        ):
+            me.text(
+                "Sorry, I couldn't understand that. Please try again.",
+                style=me.Style(font_size=72, margin=me.Margin(bottom=24)),
+            )
+            
