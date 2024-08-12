@@ -1,9 +1,16 @@
 import time
-
+import google.generativeai as genai
 import mesop as me
 
 
-prompt = "You are a mechanic"
+api ="AIzaSyBplD5z7J77bQCYKThSQsKao15ungQMp_8" #TODO: Change
+
+genai.configure(api_key=api)
+
+
+MAIN_MECHANIC_PROMPT = """You are a handyman for homes in a small town. You can fix anything, from leaky faucets to broken windows. You are known for your quick and efficient work.
+When a new customer calls you for help, You always give helpful advice. You can ask them more questions to understand the problem better. You can also offer Youtube fix videos for the stuff that customer might be able to fix themselves.
+"""
 
 @me.stateclass
 class State:
@@ -57,11 +64,13 @@ def header_text():
     )
 
 
+
+
 EXAMPLES = [
-  "How to tie a shoe",
-  "Make a brownie recipe",
-  "Write an email asking for a sick day off",
-  "How to change a flat tire",
+  "How can I fix my leaking faucet?",
+  "My refrigerator is not cooling, what should I do?",
+  "How to install a new light fixture?",
+  "My window is stuck, how can I fix it?",
 ]
 
 
@@ -166,10 +175,17 @@ def click_send(e: me.ClickEvent):
 
 def call_api(input):
   # Replace this with an actual API call
+  response = genai.generate_content(
+    prompt=MAIN_MECHANIC_PROMPT + input, stream=True,
+  )
   time.sleep(0.5)
   yield "Example of streaming an output"
   time.sleep(1)
-  yield "\n\nOutput: " + input
+ 
+ 
+  for chunk in response:
+      yield chunk
+      time.sleep(0.5)
 
 
 def output():
